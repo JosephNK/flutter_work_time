@@ -32,10 +32,12 @@ dependencies:
   path_provider:
   path:
   intl:
+  flutter_bloc:
   equatable:
   flutter_picker:
   flutter_datetime_picker:
   vibration:
+  wave: ^0.0.8
 
 dev_dependencies:
   flutter_test:
