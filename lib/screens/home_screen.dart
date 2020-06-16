@@ -78,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
     //DateTime endDateTime = DateTime.now();
     BlocProvider.of<TimerBloc>(context).add(TimerReset(second: 0));
 
+    await DBHelper().deleteAllDateTimeLogs();
     await this.load();
   }
 

@@ -14,6 +14,8 @@ part 'timer_state.dart';
 class TimerBloc extends Bloc<TimerEvent, TimerState> {
   final Ticker _ticker;
   int _notificationSec = 0;
+  int _checkDelayVibrationCount = 10;
+  int _currentDelayVibrationCount = 0;
 
   StreamSubscription<int> _tickerSubscription;
 
@@ -53,6 +55,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     DateTime startDateTime = DateTime.now();
     second = DateTime.now().difference(startDateTime.add(Duration(seconds: -1))).inSeconds;
 
+    this._currentDelayVibrationCount = 0;
     this._notificationSec = await loadSharedPreferences();
 
     yield TimerRunning(second, startDateTime);
@@ -89,15 +92,23 @@ extension VibrationHelper on TimerBloc {
   Future doVibration({int currentSec, int notificationSec}) async {
     bool isVibration = notificationSec == 0 ? false : currentSec >= notificationSec;
     bool isVibrationing = AppManager().isVibrationing;
+
     if (isVibrationing || isVibration == false) {
       return;
     }
+
+    if (_currentDelayVibrationCount >= _checkDelayVibrationCount) {
+      _currentDelayVibrationCount = 0;
+    }
+    _currentDelayVibrationCount += 1;
+    if (_currentDelayVibrationCount != 1) {
+      return;
+    }
+
     if (await Vibration.hasVibrator()) {
-      print("Vibration Start");
       AppManager().isVibrationing = true;
       await Vibration.vibrate(duration: 500);
       // await Future.delayed(const Duration(milliseconds: 500), () {});
-      print("Vibration End");
       AppManager().isVibrationing = false;
     }
   }
