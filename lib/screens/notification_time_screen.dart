@@ -104,7 +104,13 @@ class _NotificationTimeScreenState extends State<NotificationTimeScreen> {
                         this.onChangePicker(values);
                       }).showDialog(context);
                 },
-              )
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Text("타이머 시작시 적용 됩니다."),
+                ),
+              ),
             ],
           ),
         ),

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ExceptionTimeScreen extends StatefulWidget {
+class VibrationTimeScreen extends StatefulWidget {
   @override
-  _ExceptionTimeScreenState createState() => _ExceptionTimeScreenState();
+  _VibrationTimeScreenState createState() => _VibrationTimeScreenState();
 }
 
-class _ExceptionTimeScreenState extends State<ExceptionTimeScreen> {
+class _VibrationTimeScreenState extends State<VibrationTimeScreen> {
   String _minute = "0";
   String _second = "0";
 
@@ -20,9 +20,9 @@ class _ExceptionTimeScreenState extends State<ExceptionTimeScreen> {
 
   Future loadSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    int exceptionSecond = (prefs.getInt('ExceptionSecond') ?? 0);
-    int minute = exceptionSecond ~/ 60;
-    int second = exceptionSecond % 60;
+    int vibrationSecond = (prefs.getInt('VibrationSecond') ?? 0);
+    int minute = vibrationSecond ~/ 60;
+    int second = vibrationSecond % 60;
     setState(() {
       _minute = minute.toString();
       _second = second.toString();
@@ -31,7 +31,7 @@ class _ExceptionTimeScreenState extends State<ExceptionTimeScreen> {
 
   Future setSharedPreferences({int exceptionSec}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setInt('ExceptionSecond', exceptionSec);
+    prefs.setInt('VibrationSecond', exceptionSec);
   }
 
   Future onChangePicker(List values) async {
@@ -57,7 +57,7 @@ class _ExceptionTimeScreenState extends State<ExceptionTimeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('예외시간'),
+        title: Text('진동 타이머'),
       ),
       body: Container(
         child: Center(
@@ -108,7 +108,7 @@ class _ExceptionTimeScreenState extends State<ExceptionTimeScreen> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
-                  child: Text("타이머 중지시 적용 됩니다."),
+                  child: Text("타이머 시작시 적용 됩니다."),
                 ),
               ),
             ],

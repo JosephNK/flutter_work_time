@@ -87,18 +87,23 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Reset"),
-          content: Text("Do you want to reset?"),
+          title: Text("타이머 초기화"),
+          content: Text("타이머 초기화 하시겠습니까?\n(기록도 삭제 됩니다.)"),
           actions: <Widget>[
             FlatButton(
-              child: Text("OK"),
+              child: Text("예"),
               onPressed: () {
                 onOK();
                 Navigator.of(context).pop();
               },
             ),
             FlatButton(
-              child: Text("Close"),
+              child: Text(
+                "아니요",
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },

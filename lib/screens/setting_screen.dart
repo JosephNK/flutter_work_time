@@ -3,6 +3,7 @@ import 'package:flutter_work_time/common/common.dart';
 import 'package:flutter_work_time/screens/exception_time_screen.dart';
 import 'package:flutter_work_time/screens/logs_screen.dart';
 import 'package:flutter_work_time/screens/notification_time_screen.dart';
+import 'package:flutter_work_time/screens/vibration_screen.dart';
 import 'package:wakelock/wakelock.dart';
 
 class SettingScreen extends StatelessWidget {
@@ -17,7 +18,7 @@ class SettingScreen extends StatelessWidget {
           context: context,
           tiles: [
             ListTile(
-              leading: Icon(Icons.ac_unit),
+              leading: Icon(Icons.explicit),
               title: Text('예외시간'),
               trailing: Icon(Icons.arrow_forward_ios),
               onTap: () {
@@ -28,7 +29,7 @@ class SettingScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.ac_unit),
+              leading: Icon(Icons.notifications_active),
               title: Text('알림시간'),
               trailing: Icon(Icons.arrow_forward_ios),
               onTap: () {
@@ -39,7 +40,18 @@ class SettingScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.ac_unit),
+              leading: Icon(Icons.timer),
+              title: Text('진동 타이머'),
+              trailing: Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Common.push(
+                  context,
+                  widget: VibrationTimeScreen(),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.message),
               title: Text('기록'),
               trailing: Icon(Icons.arrow_forward_ios),
               onTap: () {

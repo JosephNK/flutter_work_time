@@ -14,7 +14,7 @@ part 'timer_state.dart';
 class TimerBloc extends Bloc<TimerEvent, TimerState> {
   final Ticker _ticker;
   int _notificationSec = 0;
-  int _checkDelayVibrationCount = 10;
+  int _vibrationSec = 0;
   int _currentDelayVibrationCount = 0;
 
   StreamSubscription<int> _tickerSubscription;
@@ -56,7 +56,8 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     second = DateTime.now().difference(startDateTime.add(Duration(seconds: -1))).inSeconds;
 
     this._currentDelayVibrationCount = 0;
-    this._notificationSec = await loadSharedPreferences();
+    this._notificationSec = await notificationLoadSharedPreferences();
+    this._vibrationSec = await vibrationLoadSharedPreferences();
 
     yield TimerRunning(second, startDateTime);
 
@@ -92,18 +93,21 @@ extension VibrationHelper on TimerBloc {
   Future doVibration({int currentSec, int notificationSec}) async {
     bool isVibration = notificationSec == 0 ? false : currentSec >= notificationSec;
     bool isVibrationing = AppManager().isVibrationing;
+    int checkVibrationSec = this._vibrationSec;
 
-    if (isVibrationing || isVibration == false) {
+    if (isVibrationing || isVibration == false || checkVibrationSec == 0) {
       return;
     }
 
-    if (_currentDelayVibrationCount >= _checkDelayVibrationCount) {
+    if (_currentDelayVibrationCount >= checkVibrationSec) {
       _currentDelayVibrationCount = 0;
     }
     _currentDelayVibrationCount += 1;
     if (_currentDelayVibrationCount != 1) {
       return;
     }
+
+    print("Vibration");
 
     if (await Vibration.hasVibrator()) {
       AppManager().isVibrationing = true;
@@ -113,9 +117,15 @@ extension VibrationHelper on TimerBloc {
     }
   }
 
-  Future<int> loadSharedPreferences() async {
+  Future<int> notificationLoadSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int notificationSecond = (prefs.getInt('NotificationSecond') ?? 0);
     return notificationSecond;
+  }
+
+  Future vibrationLoadSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int vibrationSecond = (prefs.getInt('VibrationSecond') ?? 0);
+    return vibrationSecond;
   }
 }
