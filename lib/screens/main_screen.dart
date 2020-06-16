@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_work_time/screens/home_screen.dart';
 import 'package:flutter_work_time/screens/setting_screen.dart';
+import 'package:wakelock/wakelock.dart';
 
 class MainScreen extends StatefulWidget {
   MainScreen({Key key, this.title}) : super(key: key);
@@ -23,11 +24,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    Wakelock.enable();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    Wakelock.disable();
     super.dispose();
   }
 

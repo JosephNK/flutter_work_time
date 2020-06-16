@@ -38,6 +38,7 @@ dependencies:
   flutter_datetime_picker:
   vibration:
   wave: ^0.0.8
+  wakelock: ^0.1.4+1
 
 dev_dependencies:
   flutter_test:
