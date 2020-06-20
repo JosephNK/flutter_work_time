@@ -29,30 +29,43 @@ class DBHelper {
     String path = join(documentsDirectory.path, 'DateTimeLog.db');
 
     return await openDatabase(path, version: 1, onCreate: (db, version) async {
-      await db.execute(
-        "CREATE TABLE $tableName(id INTEGER PRIMARY KEY, startDateTime TEXT, endDateTime TEXT)",
-      );
+      //String query = "CREATE TABLE $tableName(id INTEGER PRIMARY KEY, startDateTime TEXT, endDateTime TEXT)";
+      String query =
+          "CREATE TABLE $tableName(id TEXT PRIMARY KEY, startDateTime TEXT, endDateTime TEXT)";
+      await db.execute(query);
     }, onUpgrade: (db, oldVersion, newVersion) {});
   }
 
   // Create
   insertDateTimeLog(DateTimeLog timelog) async {
     final db = await database;
-    var res = await db.rawInsert('INSERT INTO $tableName(startDateTime, endDateTime) VALUES(?, ?)', [timelog.startDateTime, timelog.endDateTime]);
+    var res = await db.rawInsert(
+        'INSERT INTO $tableName(id, startDateTime, endDateTime) VALUES(?, ?, ?)',
+        [timelog.id, timelog.startDateTime, timelog.endDateTime]);
     return res;
   }
 
   // Read
-  getDateTimeLog(int id) async {
+  getDateTimeLog(String id) async {
     final db = await database;
     var res = await db.rawQuery('SELECT * FROM $tableName WHERE id = ?', [id]);
-    return res.isNotEmpty ? DateTimeLog(id: res.first['id'], startDateTime: res.first['startDateTime'], endDateTime: res.first['endDateTime']) : Null;
+    return res.isNotEmpty
+        ? DateTimeLog(
+            id: res.first['id'],
+            startDateTime: res.first['startDateTime'],
+            endDateTime: res.first['endDateTime'])
+        : Null;
   }
 
   // Read All
-  Future<List<DateTimeLog>> getAllDateTimeLogs() async {
+  Future<List<DateTimeLog>> getAllDateTimeLogs({String date}) async {
     final db = await database;
-    var res = await db.rawQuery('SELECT * FROM $tableName ORDER BY endDateTime DESC');
+    String query = 'SELECT * FROM $tableName ORDER BY endDateTime DESC';
+    if (date != null) {
+      query =
+          "SELECT * FROM $tableName WHERE strftime('%Y-%m-%d', startDateTime) = '$date' ORDER BY endDateTime DESC";
+    }
+    var res = await db.rawQuery(query);
     List<DateTimeLog> list = res.isNotEmpty
         ? res
             .map(
@@ -69,24 +82,33 @@ class DBHelper {
   }
 
   // Delete
-  deleteDateTimeLog(int id) async {
+  deleteDateTimeLog({String id}) async {
     final db = await database;
     var res = db.rawDelete('DELETE FROM $tableName WHERE id = ?', [id]);
     return res;
   }
 
   // Delete All
-  deleteAllDateTimeLogs() async {
+  deleteAllDateTimeLogs({String date}) async {
     final db = await database;
-    db.rawDelete('DELETE FROM $tableName');
+    String query = 'DELETE FROM $tableName';
+    if (date != null) {
+      query =
+          "DELETE FROM $tableName WHERE strftime('%Y-%m-%d', startDateTime) = '$date'";
+    }
+    db.rawDelete(query);
   }
 }
 
 extension Helper on DBHelper {
-  Future<int> getTotalWorkTime() async {
+  Future<int> getTotalWorkTime({String date}) async {
     final db = await database;
-    var res = await db.rawQuery('SELECT * FROM $tableName');
-    //List<DateTimeLog> list = (res.length != 0 || res.isNotEmpty)
+    String query = 'SELECT * FROM $tableName';
+    if (date != null) {
+      query =
+          "SELECT * FROM $tableName WHERE strftime('%Y-%m-%d', startDateTime) = '$date'";
+    }
+    var res = await db.rawQuery(query);
     List<DateTimeLog> list = res.isNotEmpty
         ? res
             .map(
@@ -101,7 +123,9 @@ extension Helper on DBHelper {
     final int checkSec = await this.loadSharedPreferences();
     var sum = 0;
     for (var item in list) {
-      final totalSec = DateTime.parse(item.endDateTime).difference(DateTime.parse(item.startDateTime)).inSeconds;
+      final totalSec = DateTime.parse(item.endDateTime)
+          .difference(DateTime.parse(item.startDateTime))
+          .inSeconds;
       final isWorkingTime = totalSec > checkSec;
       if (isWorkingTime) {
         sum = sum + totalSec;

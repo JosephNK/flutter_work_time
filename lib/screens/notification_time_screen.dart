@@ -108,7 +108,7 @@ class _NotificationTimeScreenState extends State<NotificationTimeScreen> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
-                  child: Text("타이머 시작시 적용 됩니다."),
+                  child: Text("해당 시간은 타이머 시작시 적용 됩니다."),
                 ),
               ),
             ],

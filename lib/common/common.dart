@@ -35,6 +35,38 @@ class Common {
     // //Navigator.of(context).pushNamedAndRemoveUntil(Navigator.defaultRouteName, (Route<dynamic> route) => false),
     Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
   }
+
+  static showAlert({BuildContext context, String title, String content, Function onOK}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("예"),
+              onPressed: () {
+                onOK();
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text(
+                "아니요",
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 extension TimeUtil on double {

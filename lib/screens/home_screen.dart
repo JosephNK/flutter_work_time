@@ -19,7 +19,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final navigatorKey = GlobalKey<NavigatorState>();
 
   int _totalSec = 0;
-  int _notificationSec = 0;
 
   @override
   void initState() {
@@ -34,8 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future load() async {
     print("load");
-    _notificationSec = await loadSharedPreferences();
-    int totalWorkSec = await DBHelper().getTotalWorkTime();
+    String date = DateFormat("yyyy-MM-dd").format(DateTime.now());
+    int totalWorkSec = await DBHelper().getTotalWorkTime(date: date);
     setState(() {
       _totalSec = totalWorkSec;
     });
@@ -50,7 +49,12 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTimeLog createDateTimeLog({@required DateTime startDateTime}) {
     final s = DateFormat("yyyy-MM-dd HH:mm:ss").format(startDateTime);
     final e = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
-    final item = DateTimeLog(startDateTime: s, endDateTime: e);
+    String hashCode = UniqueKey().hashCode.toString();
+    final id = "$s$e$hashCode"
+        .replaceAll(":", "")
+        .replaceAll("-", "")
+        .replaceAll(" ", "");
+    final item = DateTimeLog(id: id, startDateTime: s, endDateTime: e);
     return item;
   }
 
@@ -63,7 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
       BlocProvider.of<TimerBloc>(context).add(TimerReset(second: 0));
 
       if (startDateTime != null) {
-        await DBHelper().insertDateTimeLog(this.createDateTimeLog(startDateTime: startDateTime));
+        await DBHelper().insertDateTimeLog(
+            this.createDateTimeLog(startDateTime: startDateTime));
       }
       await this.load();
 
@@ -74,56 +79,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future onResetPress() async {
-    print("onResetPress");
     //DateTime endDateTime = DateTime.now();
     BlocProvider.of<TimerBloc>(context).add(TimerReset(second: 0));
 
-    await DBHelper().deleteAllDateTimeLogs();
+    String date = DateFormat("yyyy-MM-dd").format(DateTime.now());
+    await DBHelper().deleteAllDateTimeLogs(date: date);
     await this.load();
-  }
-
-  void _showDialog({Function onOK}) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("타이머 초기화"),
-          content: Text("타이머 초기화 하시겠습니까?\n(기록도 삭제 됩니다.)"),
-          actions: <Widget>[
-            FlatButton(
-              child: Text("예"),
-              onPressed: () {
-                onOK();
-                Navigator.of(context).pop();
-              },
-            ),
-            FlatButton(
-              child: Text(
-                "아니요",
-                style: TextStyle(
-                  color: Colors.red,
-                ),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Break Timer'),
+        title: Text('휴계 시간'),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.delete),
             onPressed: () {
-              this._showDialog(
+              Common.showAlert(
+                context: context,
+                title: "타이머 초기화",
+                content: "타이머 초기화 하시겠습니까?\n(금일 기록도 삭제 됩니다.)",
                 onOK: () {
                   this.onResetPress();
                 },
@@ -134,7 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: BlocBuilder<TimerBloc, TimerState>(builder: (context, state) {
         int currentSecond = state.second;
-        bool isNoti = _notificationSec == 0 ? false : currentSecond >= _notificationSec;
+        int notiSecond = state.notiSecond;
+
+        bool isNoti = notiSecond == 0 ? false : currentSecond >= notiSecond;
 
         return Stack(
           children: <Widget>[
@@ -212,7 +190,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           final TimerState currentState = state;
                           this.onStartPress(currentState);
                         },
-                        color: (state is TimerRunning) ? Colors.red : Colors.blue,
+                        color:
+                            (state is TimerRunning) ? Colors.red : Colors.blue,
                       ),
                     ],
                   ),

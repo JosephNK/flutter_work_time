@@ -108,7 +108,7 @@ class _ExceptionTimeScreenState extends State<ExceptionTimeScreen> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
-                  child: Text("타이머 중지시 적용 됩니다."),
+                  child: Text("모든 데이터에 적용 됩니다."),
                 ),
               ),
             ],

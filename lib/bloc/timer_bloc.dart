@@ -13,8 +13,7 @@ part 'timer_state.dart';
 
 class TimerBloc extends Bloc<TimerEvent, TimerState> {
   final Ticker _ticker;
-  int _notificationSec = 0;
-  int _vibrationSec = 0;
+
   int _currentDelayVibrationCount = 0;
 
   StreamSubscription<int> _tickerSubscription;
@@ -56,30 +55,34 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     second = DateTime.now().difference(startDateTime.add(Duration(seconds: -1))).inSeconds;
 
     this._currentDelayVibrationCount = 0;
-    this._notificationSec = await notificationLoadSharedPreferences();
-    this._vibrationSec = await vibrationLoadSharedPreferences();
+    
+    int vibraSecond = await vibrationLoadSharedPreferences();
+    int notiSecond = await notificationLoadSharedPreferences();
 
-    yield TimerRunning(second, startDateTime);
+    yield TimerRunning(second, notiSecond, vibraSecond, startDateTime);
 
     _tickerSubscription?.cancel();
     _tickerSubscription = _ticker
         .tick(ticks: second)
-        .listen((second) => add(TimerTicked(second: second, dateTime: startDateTime)));
+        .listen((second) => add(TimerTicked(second: second, notiSecond: notiSecond, vibraSecond: vibraSecond, dateTime: startDateTime)));
   }
 
   Stream<TimerState> _mapTimerTickedToState(TimerTicked tick) async* {
     int second = tick.second;
+    int notiSecond = tick.notiSecond;
+    int vibraSecond = tick.vibraSecond;
     DateTime startDateTime = tick.dateTime;
+
     second = DateTime.now().difference(startDateTime.add(Duration(seconds: -1))).inSeconds;
 
-    await this.doVibration(currentSec: second, notificationSec: this._notificationSec);
+    await this.doVibration(currentSec: second, notificationSec: notiSecond, vibraSecond: vibraSecond);
 
-    yield TimerRunning(second, startDateTime);
+    yield TimerRunning(second, notiSecond, vibraSecond, startDateTime);
 
     _tickerSubscription?.cancel();
     _tickerSubscription = _ticker
         .tick(ticks: second)
-        .listen((second) => add(TimerTicked(second: second, dateTime: startDateTime)));
+        .listen((second) => add(TimerTicked(second: second, notiSecond: notiSecond, dateTime: startDateTime)));
   }
 
   Stream<TimerState> _mapTimerResetToState(TimerReset reset) async* {
@@ -90,10 +93,10 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 }
 
 extension VibrationHelper on TimerBloc {
-  Future doVibration({int currentSec, int notificationSec}) async {
+  Future doVibration({int currentSec, int notificationSec, int vibraSecond}) async {
     bool isVibration = notificationSec == 0 ? false : currentSec >= notificationSec;
     bool isVibrationing = AppManager().isVibrationing;
-    int checkVibrationSec = this._vibrationSec;
+    int checkVibrationSec = vibraSecond;
 
     if (isVibrationing || isVibration == false || checkVibrationSec == 0) {
       return;

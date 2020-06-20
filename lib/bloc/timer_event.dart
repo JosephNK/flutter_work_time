@@ -28,12 +28,14 @@ class TimerReset extends TimerEvent {
 
 class TimerTicked extends TimerEvent {
   final int second;
+  final int notiSecond;
+  final int vibraSecond;
   final DateTime dateTime;
 
-  TimerTicked({@required this.second, this.dateTime});
+  TimerTicked({@required this.second, this.notiSecond, this.vibraSecond, this.dateTime});
 
   @override
-  List<Object> get props => [second, dateTime];
+  List<Object> get props => [second, notiSecond, dateTime];
 
   // @override
   // String toString() => "Tick { second: $second }";
